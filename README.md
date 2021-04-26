@@ -1,1 +1,2 @@
-# Semana9_fullstack_mean
+# BitStore project.
+# MEAN Fullstack project.
