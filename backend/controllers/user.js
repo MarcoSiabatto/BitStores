@@ -12,7 +12,14 @@ const registerUser = (req, res) => {
   // Use the user model (but must be clean)
   let user = new User();
   // validate password in order to ecnrypt
-  if (params.pass) {
+  if (
+    params.names &&
+    params.lastName &&
+    params.age &&
+    params.email &&
+    params.pass &&
+    params.role
+  ) {
     // Use the bcrypt in order to encrypt the password
     bcrypt.hash(params.pass, null, null, function (err, hash) {
       // If it encrypts the Hash worked
@@ -41,7 +48,7 @@ const registerUser = (req, res) => {
     });
   } else {
     // Validate the incoming json data
-    res.status(405).send({ err: "Could not save data" });
+    res.status(405).send({ err: "Field are missing!" });
   }
 };
 
@@ -59,7 +66,7 @@ const login = (req, res) => {
           if (confirm) {
             if (params.getToken) {
               res.status(200).send({
-                jwt: jwt.createToken(userData)
+                jwt: jwt.createToken(userData),
               });
             } else {
               res.status(200).send({ User: userData, message: "No Token" });

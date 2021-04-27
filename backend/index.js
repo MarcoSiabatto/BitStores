@@ -11,6 +11,7 @@ let app = express();
 // Routes
 let User = require("./routes/user");
 let Category = require("./routes/category");
+let Course = require("./routes/course");
 
 // Database connection
 mongoose.connect(
@@ -35,6 +36,7 @@ app.use(bodyParser.json());
 // Use routes API's
 app.use("/api", User);
 app.use("/api", Category);
+app.use("/api", Course);
 
 // Create file import module
 module.exports = app;

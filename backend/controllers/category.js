@@ -48,10 +48,10 @@ const searchCategory = (req, res) => {
 
 // List categories with or without filter
 const listCategory = (req, res) => {
-// If we filter by name save it
+  // If we filter by name save it
   let names = req.params["names"];
-// Search in the categories
-  Category.find({names: new RegExp(names, "i")}, (err, categoryData)=>{
+  // Search in the categories
+  Category.find({ names: new RegExp(names, "i") }, (err, categoryData) => {
     // If error when connecting to DB
     if (err) {
       res.status(500).send({ message: "Error connecting to the server" });
@@ -67,11 +67,56 @@ const listCategory = (req, res) => {
   });
 };
 
+// Edit Category
+const editCategory = (req, res) => {
+  // Obtain the id of the category
+  let id = req.params["id"];
+  // Obtain the incoming data to edit from API
+  let params = req.body;
+  // Search by id and edit
+  Category.findByIdAndUpdate(
+    { _id: id }, {names: params.names, description: params.description},
+    (err, categoryData) => {
+      if (err) {
+        res.status(500).send({ message: "Error connecting to the server" });
+      } else {
+        if (categoryData) {
+          res.status(200).send({ category: categoryData });
+        } else {
+          res.status(401).send({ message: "Category could not be edited" });
+        }
+      }
+    }
+  );
+};
+
+// Eliminate a Category
+const eliminateCategory = (req, res)=>{
+  // Obtain the id
+  let id = req.params["id"];
+  // Eliminate the category by ID
+  Category.findByIdAndDelete(
+    { _id: id },
+    (err, categoryData) => {
+      if (err) {
+        res.status(500).send({ message: "Error connecting to the server" });
+      } else {
+        if (categoryData) {
+          res.status(200).send({ category: categoryData });
+        } else {
+          res.status(401).send({ message: "Category could not be edited" });
+        }
+      }
+    }
+  );
+};
 // Export module
 module.exports = {
   registerCategory,
   searchCategory,
   listCategory,
+  editCategory,
+  eliminateCategory,
 };
 
 /* // Importamos el modelo categoria
