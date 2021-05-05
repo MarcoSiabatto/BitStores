@@ -5,9 +5,9 @@ let Schema = mongoose.Schema;
 
 // Create the Schema
 let purchaseSchema = Schema({
-    studentId: {type: Schema.ObjectId, ref: "student"},
-    userId: {type: Schema.ObjectId, ref: "purchase"},
-    datePurchase: {type: Date, default: Date.now},
+  studentId: { type: Schema.ObjectId, ref: "student" },
+  userId: { type: Schema.ObjectId, ref: "user" },
+  datePurchase: { type: Date, default: Date.now },
 });
 
 // Export to module

@@ -1,70 +1,58 @@
 // import category model
 let Category = require("../models/category");
+// Import mongoose
+let mongoose = require("mongoose");
 
 // Register a Category
-const registerCategory = (req, res) => {
+const registerCategory = async (req, res) => {
   // Obtain data from JSON
   let params = req.body;
-  // Create new instance for category
-  let category = new Category();
-  // Save incoming request data into collection
-  category.names = params.names;
-  category.description = params.description;
-  // Save the info into MongoDB
-  category.save((err, saveCategory) => {
-    // If an error comes in from Mongo Server
-    if (err) {
-      res.status(500).send({ message: "Error connecting to the server" });
-    } else {
-      if (saveCategory) {
-        res.status(200).send({ category: saveCategory });
-      } else {
-        res.status(401).send({ message: "Could not register category" });
-      }
-    }
-  });
+  // Validate that all parameters are there
+  if (!params.names || !params.description) {
+    // If there is data missing throw response
+    return res.status(401).send({ FrontError: "You are missing information" });
+  } else {
+    // Assign parameters to model's new instance
+    let category = new Category({
+      names: params.names,
+      description: params.description,
+    });
+    // Register category with Await
+    const result = await category.save();
+    // Validate result with ternary operator
+    result
+      ? res.status(200).send({ category: result })
+      : res.status(401).send({ Error: "Could not register category" });
+  }
 };
 
 // Search categories
-const searchCategory = (req, res) => {
-  // Obtain ID from category
-  let id = req.params["id"];
-  // Search for the category by its ID
-  Category.findById({ _id: id }, (err, categoryData) => {
-    // If error when connecting to DB
-    if (err) {
-      res.status(500).send({ message: "Error connecting to the server" });
-    } else {
-      if (categoryData) {
-        res.status(200).send({ category: categoryData });
-      } else {
-        res
+const searchCategory = async (req, res) => {
+  // Validate that incoming ID is valid for MongoDB
+  let validId = mongoose.Types.ObjectId.isValid(req.params["id"]);
+  if (!validId) {
+    return res.status(400).send({ Error: "ID format is not valid" });
+  } else {
+    let category = await Category.findById(req.params["id"]);
+    category
+      ? res.status(200).send({ category: category })
+      : res
           .status(401)
           .send({ message: "Category not found or does not exist" });
-      }
-    }
-  });
+  }
 };
 
 // List categories with or without filter
-const listCategory = (req, res) => {
-  // If we filter by name save it
-  let names = req.params["names"];
+const listCategory = async (req, res) => {
   // Search in the categories
-  Category.find({ names: new RegExp(names, "i") }, (err, categoryData) => {
-    // If error when connecting to DB
-    if (err) {
-      res.status(500).send({ message: "Error connecting to the server" });
-    } else {
-      if (categoryData) {
-        res.status(200).send({ category: categoryData });
-      } else {
-        res
-          .status(401)
-          .send({ message: "Category not found or does not exist" });
-      }
-    }
+  let category = await Category.find({
+    names: new RegExp(req.params["names"], "i"),
   });
+  if (!category || category.length === 0) {
+    return res.status(400).send({ Error: "Category not found" });
+  } else {
+    return res.status(200).send({ Categories: category });
+  }
 };
 
 // Edit Category
@@ -75,7 +63,8 @@ const editCategory = (req, res) => {
   let params = req.body;
   // Search by id and edit
   Category.findByIdAndUpdate(
-    { _id: id }, {names: params.names, description: params.description},
+    { _id: id },
+    { names: params.names, description: params.description },
     (err, categoryData) => {
       if (err) {
         res.status(500).send({ message: "Error connecting to the server" });
@@ -91,102 +80,29 @@ const editCategory = (req, res) => {
 };
 
 // Eliminate a Category
-const eliminateCategory = (req, res)=>{
+const eliminateCategory = (req, res) => {
   // Obtain the id
   let id = req.params["id"];
   // Eliminate the category by ID
-  Category.findByIdAndDelete(
-    { _id: id },
-    (err, categoryData) => {
-      if (err) {
-        res.status(500).send({ message: "Error connecting to the server" });
+  Category.findByIdAndDelete({ _id: id }, (err, categoryData) => {
+    if (err) {
+      res.status(500).send({ message: "Error connecting to the server" });
+    } else {
+      if (categoryData) {
+        res.status(200).send({ category: categoryData });
       } else {
-        if (categoryData) {
-          res.status(200).send({ category: categoryData });
-        } else {
-          res.status(401).send({ message: "Category could not be edited" });
-        }
+        res.status(401).send({ message: "Category could not be edited" });
       }
     }
-  );
+  });
 };
-// Export module
-module.exports = {
+
+const categoryController = {
   registerCategory,
   searchCategory,
   listCategory,
   editCategory,
   eliminateCategory,
 };
-
-/* // Importamos el modelo categoria
-let Categoria = require("../models/categoria");
-
-// Registramos categoria POST
-const registrarCategoria = (req, res) => {
-  // obtenemos los datos del JSON
-  let params = req.body;
-  // Creamos nueva instancia de categoria
-  let categoria = new Categoria();
-  // guardamos los datos del req en la coleccion
-  categoria.nombre = params.nombre;
-  categoria.descripcion = params.descripcion;
-  // save - guardamos la info en mongoDB
-  categoria.save((err, saveCategoria) => {
-    // si llega un error desde el servidor de mongo
-    if (err) {
-      res.status(500).send({ mensaje: "Error al conectar al servidor" });
-    } else {
-      if (saveCategoria) {
-        res.status(200).send({ categoria: saveCategoria });
-      } else {
-        res.status(401).send({ mensaje: "No se pudo registrar la categoria" });
-      }
-    }
-  });
-};
-
-// Buscar categorias
-const buscarCategoria = (req, res) => {
-  // obtenemos el id de la categoria
-  let id = req.params["id"];
-  // buscamos la categoria por el ID
-  Categoria.findById({ _id: id }, (err, datosCategoria) => {
-    // si hay error al conectar con mongo
-    if (err) {
-      res.status(500).send({ mensaje: "Error al conectar al servidor" });
-    } else {
-      if (datosCategoria) {
-        res.status(200).send({ categoria: datosCategoria });
-      } else {
-        res.status(401).send({ mensaje: "La categoria no existe" });
-      }
-    }
-  });
-};
-
-// Listar categorias con o sin filtro
-const listaCategoria = (req, res) => {
-  // si tenemos filtro nombre lo guardamos
-  let nombre = req.params["nombre"];
-  // Busqueda de las categorias
-  Categoria.find({ nombre: new RegExp(nombre, "i") }, (err, datosCategoria) => {
-    // si hay error al conectar con mongo
-    if (err) {
-      res.status(500).send({ mensaje: "Error al conectar al servidor" });
-    } else {
-      if (datosCategoria) {
-        res.status(200).send({ categoria: datosCategoria });
-      } else {
-        res.status(401).send({ mensaje: "No hay categorias" });
-      }
-    }
-  });
-};
-
-module.exports = {
-  registrarCategoria,
-  buscarCategoria,
-  listaCategoria,
-};
- */
+// Export module
+module.exports = categoryController;

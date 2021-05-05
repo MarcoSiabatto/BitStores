@@ -5,11 +5,11 @@ let Schema = mongoose.Schema;
 
 // Model the Schema
 let studentSchema = Schema({
-    names: String,
-    code: String,
-    email: String,
-    points: Number,
-    dateSignup: {type: Date, default: Date.now}
+  names: String,
+  code: String,
+  email: String,
+  points: Number,
+  dateSignup: { type: Date, default: Date.now },
 });
 
 // Export the file

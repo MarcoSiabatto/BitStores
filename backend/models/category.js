@@ -5,9 +5,10 @@ let Schema = mongoose.Schema;
 
 // Create the Schema
 let categorySchema = Schema({
-    names: String,
-    description: String,
+  names: String,
+  description: String,
 });
 
 // Export to module
-module.exports = mongoose.model("category", categorySchema);
+const Category = mongoose.model("category", categorySchema);
+module.exports = Category;
